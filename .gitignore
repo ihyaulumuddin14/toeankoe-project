@@ -1,0 +1,60 @@
+####################################
+# GLOBAL (OS & EDITOR)
+####################################
+
+.DS_Store
+Thumbs.db
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+####################################
+# ENV FILES (GLOBAL & BACKEND)
+####################################
+
+.env
+.env.*
+!.env.example
+
+backend/.env
+
+####################################
+# BACKEND (Node.js + TypeScript)
+####################################
+
+backend/node_modules
+backend/dist
+backend/build
+backend/.tsbuildinfo
+
+backend/logs
+backend/*.log
+
+####################################
+# DATABASE FILES (JIKA ADA)
+####################################
+
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+####################################
+# TEMP & CACHE
+####################################
+
+.cache
+.tmp
+temp
+
+####################################
+# TEST & COVERAGE
+####################################
+
+coverage
