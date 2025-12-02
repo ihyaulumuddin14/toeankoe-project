@@ -4,9 +4,16 @@ import { toast } from 'sonner'
 import { useEffect } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import api from './api/axiosInstance'
+import HttpError from './errors/http-error'
+import { useShallow } from 'zustand/react/shallow'
 
 export default function ProtectedRoute() {
-  const { user, accessToken, setAccessToken } = useAuth()
+  const { user, accessToken } = useAuth(
+    useShallow((state) => ({
+      user: state.user,
+      accessToken: state.accessToken
+    }))
+  )
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -24,10 +31,12 @@ export default function ProtectedRoute() {
 
   const refresh = async () => {
     try {
-      const response = await api.post('/auth/refresh')
+      const response = await api.get('/user/me')
       const data = response.data
-      setAccessToken(data.newAccessToken)
-      toast.success(data.message)
+
+      if (response.status !== 200) {
+        throw new HttpError(response.status, data.error || 'Failed to refresh token')
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed")
       navigate("/login", {
@@ -48,7 +57,6 @@ export default function ProtectedRoute() {
     if (!accessToken) return
 
     if (!isTokenValid(accessToken)) {
-      console.log("Access token expired, refreshing...")
       const isRefresh = confirm("Session expired. Do you want to refresh your session?")
       if (isRefresh) {
         refresh()

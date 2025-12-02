@@ -11,7 +11,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
     })
   } catch (error) {
     return res.status(500).json({
-      status: "error",
       message: "Internal server error"
     })
   }
@@ -19,14 +18,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await UserModel.findById(req.params.id)
-    return res.status(200).json({
-      message: "User retrivied successfully",
-      user
-    });
+    const user = await UserModel.findById(req.user?.id)
+    return res.status(200).json({ user });
   } catch (error) {
     return res.status(500).json({
-      status: "error",
       message: "Internal server error"
     })
   }
@@ -41,7 +36,6 @@ export const updateUser = async (req: Request, res: Response) => {
     })
   } catch (error) {
     return res.status(500).json({
-      status: "error",
       message: "Internal server error"
     })
   }
@@ -53,7 +47,6 @@ export const deleteUser = async (req: Request, res: Response) => {
     return res.status(204).json({ message: "User deleted" })
   } catch (error) {
     return res.status(500).json({
-      status: "error",
       message: "Internal server error"
     })
   }

@@ -101,12 +101,14 @@ export const refresh = async (req: Request, res: Response) => {
     const refreshTokenFromCookie = req.cookies.refreshToken
 
     if (!refreshTokenFromCookie) {
+      console.log("cookie refresh token not found")
       return res.status(401).json({ error: "No refresh token provided" })
     }
 
     // CEK REFRESH TOKEN DI DB
     const user = await UserModel.findOne({ refreshToken: refreshTokenFromCookie }).exec()
     if (!user) {
+      console.log("refresh token not found in db")
       return res.status(401).json("Invalid or expired refresh token")
     }
     
@@ -116,6 +118,7 @@ export const refresh = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!
     )
     if (!decoded) {
+      console.log("refresh token expired")
       return res.status(401).json("Invalid or expired refresh token")
     }
     
@@ -134,7 +137,8 @@ export const refresh = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "Refresh Successfully",
-      newAccessToken
+      newAccessToken,
+      user
     })
   } catch (error) {
     if (error instanceof Error) {
@@ -147,7 +151,6 @@ export const refresh = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const refreshTokenFromCookie = req.cookies.refreshToken
-    console.log("Refresh Token:", refreshTokenFromCookie)
 
     if (refreshTokenFromCookie) {
       const user = await UserModel.findOne({ refreshToken: refreshTokenFromCookie }).exec()

@@ -10,7 +10,7 @@ import { authenticate } from "../middleware/authenticate.js"
 const router = Router()
 
 router.get("/", getAllUsers)
-router.get("/me/:id", getUserById)
+router.get("/me", authenticate, getUserById)
 router.patch("/me", authenticate, updateUser)
 router.delete("/:id", deleteUser)
 

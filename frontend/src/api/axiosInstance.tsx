@@ -1,3 +1,4 @@
+import { useAuth } from "@/stores/authStore";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -48,7 +49,16 @@ api.interceptors.response.use(res => res, async error => {
             withCredentials: true
          });
          const newAccessToken = res.data.newAccessToken;
-
+         
+         const user = {
+            _id: res.data.user._id,
+            email: res.data.user.email,
+            role: res.data.user.role,
+            displayName: res.data.user.displayName
+         }
+         useAuth.getState().setUser(user);
+         useAuth.getState().setAccessToken(newAccessToken);
+         
          api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
          
          processQueue(null, newAccessToken);

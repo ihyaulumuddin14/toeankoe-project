@@ -39,6 +39,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     maxLength: 255
   }
+}, {
+  timestamps: true
 })
 
 const UserModel = mongoose.model<UserItf>("user", userSchema);
