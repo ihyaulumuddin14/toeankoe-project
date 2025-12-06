@@ -31,14 +31,9 @@ export default function ProtectedRoute() {
 
   const refresh = async () => {
     try {
-      const response = await api.get('/user/me')
-      const data = response.data
-
-      if (response.status !== 200) {
-        throw new HttpError(response.status, data.error || 'Failed to refresh token')
-      }
+      await api.get('/user/me')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Authentication failed")
+      toast.error(error instanceof Error ? error.message : error as string)
       navigate("/login", {
         replace: true,
         state: { from: location.pathname }

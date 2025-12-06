@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   return (
     <>
       <div>Profile</div>
-      <Link to="/">Go to Home</Link>
+      <Link to="/">Go to UserDashboard</Link>
     </>
-  )
+  );
 }

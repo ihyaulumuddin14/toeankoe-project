@@ -38,7 +38,7 @@ api.interceptors.response.use(res => res, async error => {
                originalRequest.headers['Authorization'] = `Bearer ${token}`;
                return api(originalRequest);
             })
-            .catch(err => Promise.reject(err));
+            .catch(err => Promise.reject(err.response?.data?.error || err));
       }
 
       originalRequest._retry = true;
@@ -65,10 +65,10 @@ api.interceptors.response.use(res => res, async error => {
 
          return api(originalRequest);
 
-      } catch (err) {
+      } catch (err: any) {
 
          processQueue(err, null);
-         return Promise.reject(err);
+         return Promise.reject(err.response?.data?.error || err);
 
       } finally {
 

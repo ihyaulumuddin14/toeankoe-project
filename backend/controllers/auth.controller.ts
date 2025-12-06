@@ -40,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
     }).exec()
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" })
+      return res.status(404).json({ error: "Pengguna tidak ditemukan" })
     } else if (!(await bcrypt.compare(password, user.password))) {
       return res.status(403).json({ error: "Incorrect password" })
     }
@@ -101,7 +101,6 @@ export const refresh = async (req: Request, res: Response) => {
     const refreshTokenFromCookie = req.cookies.refreshToken
 
     if (!refreshTokenFromCookie) {
-      console.log("cookie refresh token not found")
       return res.status(401).json({ error: "No refresh token provided" })
     }
 
@@ -109,7 +108,7 @@ export const refresh = async (req: Request, res: Response) => {
     const user = await UserModel.findOne({ refreshToken: refreshTokenFromCookie }).exec()
     if (!user) {
       console.log("refresh token not found in db")
-      return res.status(401).json("Invalid or expired refresh token")
+      return res.status(401).json({ error: "Invalid or expired refresh token" })
     }
     
     // CEK EXPIRED REFRESH TOKEN
@@ -119,7 +118,7 @@ export const refresh = async (req: Request, res: Response) => {
     )
     if (!decoded) {
       console.log("refresh token expired")
-      return res.status(401).json("Invalid or expired refresh token")
+      return res.status(401).json({ error: "Invalid or expired refresh token" })
     }
     
     // BUAT TOKEN BARU
