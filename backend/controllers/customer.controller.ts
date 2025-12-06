@@ -16,7 +16,7 @@ export const getAllCustomers = async (req: Request, res: Response) => {
   }
 }
 
-export const getCustomerById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response) => {
   try {
     const user = await UserModel.findById(req.user?.id)
     return res.status(200).json({ user });
@@ -74,7 +74,7 @@ export const deleteCustomer = async (req: Request, res: Response) => {
 };
 
 
-export const deleteCustomerByAdmin = async (req: Request, res: Response) => {
+export const deleteCustomerById = async (req: Request, res: Response) => {
   try {
     await UserModel.findByIdAndDelete(req.params.id);
     return res.status(204).json({ message: "Berhasil menghapus akun" })

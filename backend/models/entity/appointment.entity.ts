@@ -45,7 +45,8 @@ const appointmentSchema = new mongoose.Schema({
     reservationStatus: {
       type: String,
       enum: ["WAITING", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
-      required: true
+      required: true,
+      default: "WAITING"
     },
     totalPrice: {
       type: Number,
@@ -56,10 +57,12 @@ const appointmentSchema = new mongoose.Schema({
       required: true
     },
     startTime: {
-      type: Date
+      type: Date,
+      required: true
     },
     endTime: {
-      type: Date
+      type: Date,
+      required: true
     },
     services: [appointmentServiceSchema],
     rescheduleHistory: [rescheduleSchema]
