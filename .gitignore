@@ -32,6 +32,7 @@ backend/node_modules
 backend/dist
 backend/build
 backend/.tsbuildinfo
+backend/seed
 
 backend/logs
 backend/*.log

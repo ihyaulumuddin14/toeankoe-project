@@ -17,7 +17,7 @@
   "include": [
     "**/*.ts",
     "types/**/*.d.ts"  // ← Include type declarations
-  ],
+, "seed/ad"  ],
   "exclude": [
     "node_modules",
     "dist"

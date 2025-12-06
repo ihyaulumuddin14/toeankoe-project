@@ -1,17 +1,20 @@
 import { Router } from "express"
 import {
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser
-} from "../controllers/user.controller.js"
+  getAllCustomers,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
+  deleteCustomerByAdmin
+} from "../controllers/customer.controller.js"
 import { authenticate } from "../middleware/authenticate.js"
+import { adminOnly } from "../middleware/adminOnly.js"
 
 const router = Router()
 
-router.get("/", getAllUsers)
-router.get("/me", authenticate, getUserById)
-router.patch("/me", authenticate, updateUser)
-router.delete("/:id", deleteUser)
+router.get("/", adminOnly, getAllCustomers)
+router.get("/me", authenticate, getCustomerById)
+router.patch("/me", authenticate, updateCustomer)
+router.delete("/me", authenticate, deleteCustomer)
+router.delete("/:id", adminOnly, deleteCustomerByAdmin)
 
 export default router

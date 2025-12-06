@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import { Request, Response } from "express"
 import jwt from "jsonwebtoken"
 import UserModel from "../models/entity/user.entity.js"
+import generateUsername from "../helper/username-generator.js"
 dotenv.config()
 
 export const register = async (req: Request, res: Response) => {
@@ -11,23 +12,33 @@ export const register = async (req: Request, res: Response) => {
 
     const existingUser = await UserModel.findOne({ email }).exec()
     if (existingUser) {
-      return res.status(409).json({ error: "User already exists" })
+      return res.status(409).json({ message: "Pengguna telah terdaftar" })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = await UserModel.create({
       email,
+      username: await generateUsername(email.split("@")[0]),
       password: hashedPassword,
-      displayName
+      displayName: displayName?.toLowerCase() || ( email.split("@")[0].length > 5 ? email.split("@")[0].slice(0, 5).toLowerCase() : email.split("@")[0].toLowerCase() )
     })
 
-    res.status(201).json(newUser)
+    res.status(201).json({
+      message: "Pengguna berhasil didaftarkan",
+      data: {
+        id: newUser._id,
+        email: newUser.email,
+        username: newUser.username,
+        displayName: newUser.displayName,
+        role: newUser.role
+      }
+    })
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
-    res.status(500).json({ error: "unknown error" });
+    res.status(500).json({ message: "Unknown error" });
   }
 }
 
@@ -40,16 +51,17 @@ export const login = async (req: Request, res: Response) => {
     }).exec()
 
     if (!user) {
-      return res.status(404).json({ error: "Pengguna tidak ditemukan" })
+      return res.status(404).json({ message: "Pengguna tidak ditemukan" })
     } else if (!(await bcrypt.compare(password, user.password))) {
-      return res.status(403).json({ error: "Incorrect password" })
+      return res.status(403).json({ message: "Password salah" })
     }
 
     const accessToken = jwt.sign(
       {
         id: user._id.toString(),
         email: user.email,
-        role: user.role
+        role: user.role,
+        username: user.username
       },
       process.env.JWT_SECRET!,
       {
@@ -83,16 +95,24 @@ export const login = async (req: Request, res: Response) => {
     })
 
     res.status(200).json({
-      message: "Login Successfully",
+      message: "Login Berhasil",
       accessToken,
-      user
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
     })
   } catch (error) {
-    console.log(error)
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
-    res.status(500).json({ error: "unknown error" });
+    res.status(500).json({ message: "Unknown error" });
   }
 }
 
@@ -101,14 +121,14 @@ export const refresh = async (req: Request, res: Response) => {
     const refreshTokenFromCookie = req.cookies.refreshToken
 
     if (!refreshTokenFromCookie) {
-      return res.status(401).json({ error: "No refresh token provided" })
+      return res.status(401).json({ message: "Tidak ada refresh token" })
     }
 
     // CEK REFRESH TOKEN DI DB
     const user = await UserModel.findOne({ refreshToken: refreshTokenFromCookie }).exec()
     if (!user) {
       console.log("refresh token not found in db")
-      return res.status(401).json({ error: "Invalid or expired refresh token" })
+      return res.status(401).json({ message: "Refresh token tidak valid atau kadaluarsa" })
     }
     
     // CEK EXPIRED REFRESH TOKEN
@@ -117,8 +137,7 @@ export const refresh = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!
     )
     if (!decoded) {
-      console.log("refresh token expired")
-      return res.status(401).json({ error: "Invalid or expired refresh token" })
+      return res.status(401).json({ message: "Refresh token tidak valid atau kadaluarsa" })
     }
     
     // BUAT TOKEN BARU
@@ -126,7 +145,8 @@ export const refresh = async (req: Request, res: Response) => {
       {
         id: user._id.toString(),
         email: user.email,
-        role: user.role
+        role: user.role,
+        username: user.username
       },
       process.env.JWT_SECRET!,
       {
@@ -135,15 +155,15 @@ export const refresh = async (req: Request, res: Response) => {
     )
 
     res.status(200).json({
-      message: "Refresh Successfully",
+      message: "Refresh Sukses",
       newAccessToken,
       user
     })
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
-    res.status(500).json({ error: "unknown error" });
+    res.status(500).json({ message: "Unknown error" });
   }
 }
 
@@ -160,7 +180,7 @@ export const logout = async (req: Request, res: Response) => {
           { $unset: { refreshToken: "" } }
         )
       } else {
-        return res.status(403).json({ error: "Invalid refresh token" })
+        return res.status(403).json({ message: "Refresh token tidak valid" })
       }
     }
 
@@ -172,12 +192,12 @@ export const logout = async (req: Request, res: Response) => {
     })
 
     res.status(200).json({
-      message: "Logout Successfully"
+      message: "Logout Berhasil"
     })
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
-    res.status(500).json({ error: "unknown error" });
+    res.status(500).json({ message: "Unknown error" });
   }
 }

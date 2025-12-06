@@ -1,16 +1,5 @@
 import mongoose from "mongoose"
 
-export interface UserItf extends Document {
-  _id: string,
-  email: string,
-  password: string,
-  displayName: string,
-  role: "USER" | "ADMIN",
-  refreshToken: string
-  createdAt: Date,
-  updatedAt: Date
-}
-
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -18,6 +7,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
     maxlength: 255,
     match: /.+@.+\..+/,
+  },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    maxLength: 255
   },
   password: {
     type: String,
@@ -28,12 +23,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     maxLength: 10,
     required: false,
-    default: "User",
+    default: "user",
   },
   role: {
     type: String,
-    enum: ["USER", "ADMIN"],
-    default: "USER"
+    enum: ["CUSTOMER", "STAFF", "ADMIN"],
+    default: "CUSTOMER"
+  },
+  phoneNumber: {
+    type: String,
+    maxLength: 15,
+    required: false
   },
   refreshToken: {
     type: String,
@@ -43,5 +43,4 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 })
 
-const UserModel = mongoose.model<UserItf>("user", userSchema);
-export default UserModel;
+export default mongoose.model("User", userSchema)
