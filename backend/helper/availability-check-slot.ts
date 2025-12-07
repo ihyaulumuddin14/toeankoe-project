@@ -2,40 +2,58 @@ import { DAILY_SLOTS } from "../constant/dailySlot";
 import AppointmentModel from "../models/entity/appointment.entity.js";
 import { buildDateTime } from "./build-date-time";
 
-export const isConsecutiveSlotAvailable = async (date: string, requiredMinutes: number) => {
-  const requiredSlots = requiredMinutes / 45;
+export const isConsecutiveSlotAvailable = async (
+  date: string, 
+  startTime: string, 
+  requiredMinutes: number
+) => {
+  const startSlotIndex = DAILY_SLOTS.findIndex(slot => slot.start === startTime);
+  
+  if (startSlotIndex === -1) {
+    return { 
+      available: false, 
+      reason: "Waktu mulai tidak valid" 
+    };
+  }
+
+  const requiredSlots = Math.ceil(requiredMinutes / 45);
+  
+  if (startSlotIndex + requiredSlots > DAILY_SLOTS.length) {
+    return { 
+      available: false, 
+      reason: "Durasi melebihi jam operasional" 
+    };
+  }
+
+  const requestedSlots = DAILY_SLOTS.slice(startSlotIndex, startSlotIndex + requiredSlots);
 
   const appointments = await AppointmentModel.find({ date });
-
-  const slotStatus = DAILY_SLOTS.map(slot => {
+  
+  for (const slot of requestedSlots) {
     const slotStart = buildDateTime(date, slot.start);
     const slotEnd = buildDateTime(date, slot.end);
-
-    const overlapping = appointments.some(app => {
+    
+    const hasConflict = appointments.some(app => {
       if (!app.startTime || !app.endTime) return false;
-
       const appStart = new Date(app.startTime);
       const appEnd = new Date(app.endTime);
-
+      
+      // Cek overlap
       return appStart < slotEnd && appEnd > slotStart;
     });
-
-    return overlapping;
-  });
-
-  for (let i = 0; i <= slotStatus.length - requiredSlots; i++) {
-    const slice = slotStatus.slice(i, i + requiredSlots);
-    const isAllFree = slice.every(s => s === false);
-
-    if (isAllFree) {
-      return {
-        available: true,
-        startSlotIndex: i,
-        startTime: DAILY_SLOTS[i].start,
-        slots: DAILY_SLOTS.slice(i, i + requiredSlots)
+    
+    if (hasConflict) {
+      return { 
+        available: false, 
+        reason: `Slot ${slot.start}-${slot.end} sudah terisi` 
       };
     }
   }
 
-  return { available: false };
+  return {
+    available: true,
+    startTime: requestedSlots[0].start,
+    endTime: requestedSlots[requestedSlots.length - 1].end,
+    slots: requestedSlots
+  };
 };

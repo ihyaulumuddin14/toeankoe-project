@@ -29,7 +29,7 @@ export const register = async ({ displayName, email, password }: RegisterPayload
   const data = await response.json()
 
   if (!response.ok) {
-    throw new HttpError(response.status, data.error || 'Registration failed')
+    throw new HttpError(response.status, data.message || 'Registration failed')
   }
   return data
 }
@@ -52,17 +52,10 @@ export const login = async ({ emailOrUsername, password, rememberMe }: LoginPayl
   const data = await response.json()
   
   if (!response.ok) {
-    throw new HttpError(response.status, data.error || 'Login failed')
+    throw new HttpError(response.status, data.message || 'Login failed')
   } else {
-    const { _id, email, role, displayName } = data.user
-    const user = {
-      _id,
-      email,
-      role,
-      displayName
-    }
     return {
-      user,
+      user: data.user,
       message: data.message,
       accessToken: data.accessToken
     }
@@ -78,7 +71,7 @@ export const logout = async () => {
 
   const data = await response.json()
   if (!response.ok) {
-    throw new HttpError(response.status, data.error || 'Logout failed')
+    throw new HttpError(response.status, data.message || 'Logout failed')
   } else {
     return data
   }

@@ -50,7 +50,7 @@ export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
     }
 
     res.status(401).json({ 
-      error: "Authentication failed" 
+      error: error.message
     });
   }
 }

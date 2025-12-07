@@ -17,4 +17,15 @@ const serviceModel = new mongoose.Schema({
   }, { timestamps: true }
 )
 
+serviceModel.set("toJSON", {
+  transform: function (doc, ret) {
+    const obj: any = { ...ret };
+    
+    obj.id = obj._id;
+    delete obj._id;
+
+    return obj;
+  }
+});
+
 export default mongoose.model("Service", serviceModel)

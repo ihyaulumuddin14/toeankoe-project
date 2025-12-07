@@ -26,13 +26,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "Pengguna berhasil didaftarkan",
-      data: {
-        id: newUser._id,
-        email: newUser.email,
-        username: newUser.username,
-        displayName: newUser.displayName,
-        role: newUser.role
-      }
+      data: newUser
     })
   } catch (error) {
     if (error instanceof Error) {
@@ -58,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
 
     const accessToken = jwt.sign(
       {
-        id: user._id.toString(),
+        id: user.id.toString(),
         email: user.email,
         role: user.role,
         username: user.username
@@ -71,7 +65,7 @@ export const login = async (req: Request, res: Response) => {
 
     const refreshToken = jwt.sign(
       {
-        id: user._id.toString(),
+        id: user.id.toString(),
         role: user.role
       },
       process.env.JWT_SECRET!,
@@ -97,16 +91,7 @@ export const login = async (req: Request, res: Response) => {
     res.status(200).json({
       message: "Login Berhasil",
       accessToken,
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        displayName: user.displayName,
-        role: user.role,
-        phoneNumber: user.phoneNumber,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      }
+      user
     })
   } catch (error) {
     if (error instanceof Error) {
@@ -143,7 +128,7 @@ export const refresh = async (req: Request, res: Response) => {
     // BUAT TOKEN BARU
     const newAccessToken = jwt.sign(
       {
-        id: user._id.toString(),
+        id: user.id.toString(),
         email: user.email,
         role: user.role,
         username: user.username

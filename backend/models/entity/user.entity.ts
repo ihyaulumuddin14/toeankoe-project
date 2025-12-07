@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     maxLength: 15,
     required: false
   },
+  skills: [{
+    type: String,
+    required: false
+  }],
   refreshToken: {
     type: String,
     maxLength: 255
@@ -42,5 +46,18 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 })
+
+userSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    const obj: any = { ...ret };
+    
+    obj.id = obj._id;
+    delete obj._id;
+    delete obj.password;
+
+    return obj;
+  }
+});
+
 
 export default mongoose.model("User", userSchema)

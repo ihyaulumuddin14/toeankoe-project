@@ -18,4 +18,15 @@ const attendanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+attendanceSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    const obj: any = { ...ret };
+    
+    obj.id = obj._id;
+    delete obj._id;
+
+    return obj;
+  }
+});
+
 export default mongoose.model("Attendance", attendanceSchema);

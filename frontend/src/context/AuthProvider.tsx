@@ -43,9 +43,9 @@ export function AuthProvider({ children }: AuthProviderType) {
     const data = await response.json()
 
     if (data) {
-      const { _id, email, role, displayName } = data.user
+      const { id, email, role, displayName } = data.user
       const user = {
-        _id,
+        id,
         email,
         role,
         displayName

@@ -2,13 +2,14 @@ import { Request, Response, NextFunction } from "express";
 import AppointmentModel from "../models/entity/appointment.entity.js";
 import UserModel from "../models/entity/user.entity.js"
 import ServiceModel from "../models/entity/service.entity.js"
-import HttpError from "../utils/http-error.js";
 import { isConsecutiveSlotAvailable } from "../helper/availability-check-slot.js";
 import { buildDateTime } from "../helper/build-date-time.js";
+import toLocalISOString from "../helper/local-iso-string.js";
 
 interface CreateAppointmentPayload {
   date: string;
-  startTime?: string;
+  startTime: string;
+  capsterId?: string;
   customerName?: string;
   services: string[];
 }
@@ -40,9 +41,6 @@ export const getAppointments = async (req: Request, res: Response, next: NextFun
     const appointments = await AppointmentModel.find(filter);
     res.json(appointments);
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: "Gagal mengambil data appointment" })
-    }
     res.status(500).json({ message: "Gagal mengambil data appointment" })
   }
 };
@@ -64,9 +62,6 @@ export const getAppointmentById = async (req: Request, res: Response, next: Next
     
     res.json(appointment);
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: "Gagal mengambil data appointment" })
-    }
     res.status(500).json({ message: "Gagal mengambil data appointment" })
   }
 };
@@ -81,10 +76,19 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
       return res.status(403).json({ message: "Admin tidak diperbolehkan membuat appointment" })
     }
 
+    if (data.startTime! < toLocalISOString(new Date())) {
+      return res.status(400).json({ message: "Waktu tidak valid" });
+    }
+
     let totalDurationMinutes: number = 0;
     let totalPrice: number = 0;
 
-    const serviceDocs = await ServiceModel.find({ _id: { $in: data.services } });
+    const serviceDocs = await ServiceModel.find({
+      _id: {
+        $in: data.services
+      }
+    });
+
     if (serviceDocs.length !== data.services.length) {
       return res.status(404).json({ message: "Service tidak ditemukan" });
     }
@@ -101,7 +105,7 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
     });
 
     // validasi slot
-    const availability = await isConsecutiveSlotAvailable(data.date, totalDurationMinutes);
+    const availability = await isConsecutiveSlotAvailable(data.date, data.startTime, totalDurationMinutes);
     if (!availability.available) {
       return res.status(400).json({ 
         message: "Slot waktu tidak tersedia untuk durasi service tersebut"
@@ -125,17 +129,22 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
       customerName,
       appointmentType: user?.role === "CUSTOMER" ? "RESERVATION" : "WALKIN",
       customerId: user?.role === "CUSTOMER" ? user.id : null,
-      capsterId: user?.role === "STAFF" ? user.id : null,
+      capsterId: user?.role === "STAFF" ? user.id : data.capsterId,
       services: appointmentServices,
+      totalPrice,
       rescheduleHistory: []
     });
 
-    res.status(201).json(newAppointment);
+    res.status(201).json({
+      message: "Appointment berhasil dibuat",
+      data: newAppointment
+    });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ message: "Gagal membuat antrian" })
+      res.status(500).json({ message: error.message })
+    } else {
+      res.status(500).json({ message: "Gagal membuat appointment" })
     }
-    res.status(500).json({ message: "Gagal membuat antrian" })
   }
 };
 
@@ -151,7 +160,7 @@ export const rescheduleAppointment = async (req: Request, res: Response) => {
 
     const appointment = await AppointmentModel.findById(id);
 
-    if (user?.id !== appointment.customerId) {
+    if (user?.id !== appointment?.customerId) {
       return res.status(404).json({ message: "Appointment tidak cocok" });
     }
 
@@ -183,12 +192,16 @@ export const rescheduleAppointment = async (req: Request, res: Response) => {
       oldStart: appointment.startTime.toISOString(),
       newDate: date,
       newStart: startTime,
+
       changedAt: new Date()
     });
 
     // update data
     appointment.date = date;
     appointment.startTime = new Date(startTime);
+
+    // development pending
+    // appointment.endTime = new Date(appointment.startTime.getTime() + (appointment.services.reduce((total, service) => total + service?.durationMinute, 0) * 60000));
 
     await appointment.save();
 
@@ -213,10 +226,6 @@ export const changeAppointmentStatus = async (req: Request, res: Response) => {
     }
 
     const appointment = await AppointmentModel.findById(id);
-
-    if (user?.id !== appointment.capsterId) {
-      return res.status(404).json({ message: "Appointment tidak cocok" });
-    }
 
     if (!appointment) {
       return res.status(404).json({ message: "Appointment tidak ditemukan" });

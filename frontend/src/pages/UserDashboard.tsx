@@ -33,12 +33,12 @@ export default function UserDashboard() {
   }, [location.state]);
 
   return (
-    <>
-      <div>Your're authorized</div>
+    <section>
+      {/* <div>Your're authorized</div>
       <Link to="/profile">Go to Profile</Link>
       <button className="border " onClick={handleLogout}>
         Logout
-      </button>
-    </>
+      </button> */}
+    </section>
   );
 }

@@ -51,7 +51,7 @@ api.interceptors.response.use(res => res, async error => {
          const newAccessToken = res.data.newAccessToken;
          
          const user = {
-            _id: res.data.user._id,
+            id: res.data.user.id,
             email: res.data.user.email,
             role: res.data.user.role,
             displayName: res.data.user.displayName

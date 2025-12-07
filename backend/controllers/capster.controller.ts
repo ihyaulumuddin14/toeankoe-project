@@ -20,7 +20,7 @@ export const addCapster = async (req: Request, res: Response) => {
       role: "STAFF"
     });
 
-    return res.status(201).json({ message: "Capster dibuat", data: capster });
+    return res.status(201).json({ message: "Capster berhasil dibuat", data: capster });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -39,7 +39,10 @@ export const getAllCapster = async (req: Request, res: Response) => {
 
 export const getCapsterById = async (req: Request, res: Response) => {
   try {
-    const capster = await UserModel.findOne({ _id: req.params.id, role: "STAFF" });
+    const capster = await UserModel.findOne({
+      _id: req.params.id,
+      role: "STAFF"
+    });
     if (!capster) {
       return res.status(404).json({ message: "Capster tidak ditemukan" });
     }
@@ -71,13 +74,16 @@ export const updateCapster = async (req: Request, res: Response) => {
 
 export const deleteCapster = async (req: Request, res: Response) => {
   try {
-    const deleted = await UserModel.findOneAndDelete({ _id: req.params.id, role: "STAFF" });
+    const deleted = await UserModel.findOneAndDelete({
+      _id: req.params.id,
+      role: "STAFF"
+    });
 
     if (!deleted) {
       return res.status(404).json({ message: "Capster tidak ditemukan" });
     }
 
-    return res.status(200).json({ message: "Capster dihapus", data: deleted });
+    return res.status(200).json({ message: "Capster berhasil dihapus", data: deleted });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }

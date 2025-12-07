@@ -23,4 +23,15 @@ const notificationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+notificationSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    const obj: any = { ...ret };
+    
+    obj.id = obj._id;
+    delete obj._id;
+
+    return obj;
+  }
+});
+
 export default mongoose.model("Notification", notificationSchema);
