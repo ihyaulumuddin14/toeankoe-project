@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { logout as logoutService } from "@/services/auth.service";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/stores/authStore";
+import { useAuth } from "@/stores/useAuth";
+import MainNavbar from "@/components/MainNavbar";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -34,11 +35,12 @@ export default function UserDashboard() {
 
   return (
     <section>
-      {/* <div>Your're authorized</div>
-      <Link to="/profile">Go to Profile</Link>
+      <h1>User Dashboard</h1>
+
+      <button onClick={() => navigate("/appointment/choose-service")}>Service</button>
       <button className="border " onClick={handleLogout}>
         Logout
-      </button> */}
+      </button>
     </section>
   );
 }

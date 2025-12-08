@@ -106,14 +106,14 @@ export const refresh = async (req: Request, res: Response) => {
     const refreshTokenFromCookie = req.cookies.refreshToken
 
     if (!refreshTokenFromCookie) {
-      return res.status(401).json({ message: "Tidak ada refresh token" })
+      return res.status(401).json({ message: "You're not logged in" })
     }
 
     // CEK REFRESH TOKEN DI DB
     const user = await UserModel.findOne({ refreshToken: refreshTokenFromCookie }).exec()
     if (!user) {
       console.log("refresh token not found in db")
-      return res.status(401).json({ message: "Refresh token tidak valid atau kadaluarsa" })
+      return res.status(401).json({ message: "Invalid or expired refresh token" })
     }
     
     // CEK EXPIRED REFRESH TOKEN
@@ -122,7 +122,7 @@ export const refresh = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!
     )
     if (!decoded) {
-      return res.status(401).json({ message: "Refresh token tidak valid atau kadaluarsa" })
+      return res.status(401).json({ message: "Invalid or expired refresh token" })
     }
     
     // BUAT TOKEN BARU
@@ -165,7 +165,7 @@ export const logout = async (req: Request, res: Response) => {
           { $unset: { refreshToken: "" } }
         )
       } else {
-        return res.status(403).json({ message: "Refresh token tidak valid" })
+        return res.status(403).json({ message: "Invalid or expired refresh token" })
       }
     }
 

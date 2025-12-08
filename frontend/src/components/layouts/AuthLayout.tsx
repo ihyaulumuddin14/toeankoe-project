@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import SimpleNavbar from "../SimpleNavbar";
 
 type AuthLayoutType = {
   children: React.ReactNode,
@@ -18,18 +19,9 @@ export default function AuthLayout({
   footer,
   footerUrl
 } : AuthLayoutType) {
-  const navigate = useNavigate();
-
   return (
     <section className="w-full h-screen flex flex-col justify-start items-center">
-      <nav className="w-full flex justify-start items-center px-5 py-3 border-y gap-4">
-        <div
-          className="p-2 border aspect-square rounded-md cursor-pointer hover:bg-secondary/10 transition" 
-          onClick={() => navigate(-1)}>
-            <ChevronLeft />
-        </div>
-        <h1 className="text-xl font-light">{title}</h1>
-      </nav>
+      <SimpleNavbar title={title}/>
 
       <header className="w-xs flex flex-col justify-center items-center gap-5 my-6">
         <img src="/logo.png" alt="logo" />
